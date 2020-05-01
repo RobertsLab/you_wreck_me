@@ -1,0 +1,34 @@
+---
+title: "class_work_9"
+output: html_document
+---
+
+### Load Required Packages
+```{r}
+library(tidyverse)
+```
+
+
+### Load in Data Frame
+```{r}
+genes_wide = data.frame(
+  name = c("A", "B", "C"),
+  a = c("16-Y", "25-N", "13-Y"),
+  t = c("1-N", "12-Y", "31-Y")
+)
+```
+
+
+### Gather Base Names into Rows
+```{r}
+genes_long = genes_wide %>%
+  gather(base, base_counts, a:t)
+```
+
+
+### Separate Counts and Sequence
+```{r}
+genes = genes_long %>%
+  separate(base_counts, c("counts", "sequence"), sep = "-")
+```
+
