@@ -2,7 +2,44 @@
 title: "Lab Meeting - Cold Room Animal"
 author: "Celeste Valdivia"
 format: html
-editor: visual
 ---
 
-## 
+```{r}
+library(tidyverse)
+library(ggplot2)
+```
+
+
+## Curling Google sheet 
+
+Make sure you have made your Google sheet publicly available to anyone that has the link.
+
+```{r, engine='bash'}
+
+curl -L https://docs.google.com/spreadsheets/d/1jGW1Nv6c5Hy132QUMRElk4ewCfDuCLfwiLPpfHapQZA/export?exportFormat=csv | tee ~/you_wreck_me/data/cold-room.csv
+```
+
+## Read in the data to your R environment
+
+```{r}
+animalRoom <- read.csv(file = "~/you_wreck_me/data/cold-room.csv")
+```
+
+## Messing around
+```{r}
+animalRoom2 <- na.omit(animalRoom) # get rid of na's
+animalRoom2$date <- mdy(animalRoom2$date) #converting the date column to  mdy
+```
+
+:p 
+
+```{r}
+ggplot(animalRoom2, aes(x=date, y = attached_zooids)) +
+  geom_line() +
+  labs(title = "Attached Zooid Count Over Time",
+       x = "Date",
+       y = "Attached Zooids")
+```
+
+
+
