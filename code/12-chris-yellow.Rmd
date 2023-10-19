@@ -41,13 +41,13 @@ MARINe
 library(data.table)
 library(dplyr)
 library('ggplot2')
-library("indicspecies")
+#library("indicspecies")
 library(kableExtra)
 library(knitr)
 library(RColorBrewer)
-library(tidyr)
-library(tidyverse)
-library(vegan)
+#library("tidyr")
+#library(tidyverse)
+#library(vegan)
 
 ```
 
