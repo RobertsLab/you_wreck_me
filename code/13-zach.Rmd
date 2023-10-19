@@ -1,0 +1,27 @@
+---
+title: "13-zach"
+author: "Zach Bengtsson"
+date: "2023-10-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Calculate length depth ratio for oysters from different populations...
+```{r}
+# Step 1: Read the CSV file into a data frame
+data <- read.csv("~/github/you_wreck_me/data/13-oyster-length-depth.csv")
+
+# Step 2: Calculate the ratio (length / depth)
+data$length_to_depth_ratio <- data$length / data$depth
+
+# You can also write the results back to a new CSV file if needed
+write.csv(data, "~/github/you_wreck_me/output/13-oyster-length-depth-ratio.csv")
+
+# Print the resulting data frame with the calculated ratio
+print(data)
+
+```
+

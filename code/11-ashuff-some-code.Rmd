@@ -1,0 +1,101 @@
+---
+title: Some code from Ariana 
+author: "AS Huffmyer"
+date: '2023'
+output:
+  html_document:
+    code_folding: hide
+    toc: yes
+    toc_depth: 6
+    toc_float: yes
+  pdf_document:
+    keep_tex: yes
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(car)
+```
+
+## Load some data 
+
+Load some data for coral larval size in two temperature treatments. 
+```{r}
+data<-read_csv(file="data/11-ashuff-larval-size-data.csv")
+
+data<-data%>%
+  select(!volume.mm3)
+```
+
+Calculate volume as a prolate spheroid. 
+```{r}
+data<-data%>%
+  mutate(volume.mm3=((4/3) * pi * (width.mm/2) * (length.mm/2)^2))
+```
+
+Look at the data. 
+```{r}
+str(data)
+head(data)
+```
+
+## Run some code 
+
+Filter data to only the final time point. 
+```{r}
+data<-data%>%
+  filter(!timepoint=="Baseline")
+```
+
+Run anova model to look at treatment differences. 
+```{r}
+model<-aov(volume.mm3~treatment, data=data)
+
+summary(model)
+qqPlot(residuals(model))
+```
+
+Plot the data. 
+```{r}
+plot<-data %>%
+    filter(timepoint=="Sampling")%>%
+  
+    ggplot(., aes(x = as.factor(treatment), y = volume.mm3)) +
+    geom_boxplot(aes(color=treatment), outlier.shape=NA, lwd=0.5) +
+    geom_point(aes(fill=treatment), pch = 21, size=4, position = position_jitterdodge(0.2), alpha=0.2) + 
+    scale_fill_manual(values=c("blue", "red"))+
+    scale_color_manual(values=c("blue", "red"))+
+    xlab("") + 
+    ylab(expression(bold(paste("Larval Size (mm"^3, ")"))))+
+    geom_text(x=1.5, y=0.0, label="p<0.001", color="black", size=5)+
+    theme_classic() + 
+    ylim(0,0.12)+
+    theme(
+      legend.position="none",
+      axis.title=element_text(face="bold", size=14),
+      axis.text=element_text(size=12, color="black"), 
+      legend.title=element_text(face="bold", size=14)
+      ); plot
+```
+
+
+## Output some new data 
+
+Generate a data frame that outputs descriptive statistics for larval size in each treatment. 
+```{r}
+data %>%
+    filter(!timepoint=="Baseline")%>% #keep just the end time point
+    group_by(treatment)%>%
+    dplyr::summarise(mean=mean(volume.mm3, na.rm=TRUE), 
+                     n=length(volume.mm3),
+                     sd=sd(volume.mm3, na.rm=TRUE),
+                     se=sd/sqrt(n))%>%
+    write_csv("output/11-ashuff-output-data.csv")
+```
+
