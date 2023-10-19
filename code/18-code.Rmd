@@ -5,4 +5,7 @@ date: "2023-10-19"
 output: html_document
 ---
 
-
+```{bash}
+head /home/shared/8TB_HDD_01/sam/data/C_virginica/genomes/GCF_002022765.2_C_virginica-3.0_genomic.fna.fai \
+> /home/shared/8TB_HDD_01/sam/gitrepos/you_wreck_me/output/18-head-GCF_002022765.2_C_virginica-3.0_genomic.fna.fai
+```
