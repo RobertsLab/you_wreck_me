@@ -1,0 +1,237 @@
+---
+title: "Cleaning up Yellow Island Visualizations"
+author: "Chris"
+date: "2023-10-19"
+output: html_document
+output: 
+  html_document: 
+  theme: readable 
+  highlight: zenburn 
+    toc: true 
+    toc_float: true 
+    number_sections: true 
+    code_folding: show 
+    code_download: true 
+editor: 
+markdown: 
+wrap: 72 
+---
+
+###READ ME We will use the following files to explore our data
+
+algae.csv - the algal presence/ absence by top layer and second layer percentCover.csv - the substrate and second layer information 
+truncated.csv - this is a simplified version of species data
+combinedMarine.csv - this is the post point and manchester data from MARINe
+
+# Package Install and call
+```{r}
+
+# Installation is commented out, remove hashtag if you need to install
+#install.packages("kableExtra")
+#install.packages('gridExtra')
+
+```
+
+```{r}
+
+#Use library to call your installed packages for use
+library(data.table)
+library(dplyr)
+library('ggplot2')
+library("indicspecies")
+library(kableExtra)
+library(knitr)
+library(RColorBrewer)
+library(tidyr)
+library(tidyverse)
+library(vegan)
+
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Know where you're working
+```{r}
+
+# make sure you know where you are working, remove the #if you need to make this work
+#getwd()
+#setwd()
+
+```
+
+# Load your data
+```{r}
+
+counts<- read.csv("truncated.csv", header= TRUE) #species counts per section
+algae<- read.csv("algae.csv", header= TRUE) #algal cover in first and second layer of each quadrat
+substrate<- read.csv("substrate.csv", header=TRUE) #substrate percent cover in first and second layer of each quadrat
+marine<- read.csv("combinedMarine.csv", header= TRUE)
+
+```
+
+# Inspect your data
+```{r}
+
+# remove the hashtag from each operator to use it for each of your data sets
+# check out row/ column counts to make sure you've got everything
+#dim(counts)
+
+#quick view of data frame structure to see character v factor and such
+#str()
+
+#look at the summary of your data to see what categorically exists
+#summary()
+
+```
+# Big Picture Viz
+## Manipulate counts data to make visualizations
+```{r}
+
+counts1 <- counts %>%
+  gather(key = "Phylum", value = "Count", ANNELIDA:OSTEICHTHYES)
+
+# Sum the counts for each SECTION and Phylum
+section_phylum_counts <- counts1 %>%
+  group_by(SECTION, Phylum) %>%
+  summarize(Total_Count = sum(Count))
+
+# Plot the stacked bar graph for counts by SECTION with phyla as fill
+ggplot(section_phylum_counts, aes(x = SECTION, y = Total_Count, fill = Phylum)) +
+  geom_bar(stat = "identity") +
+  labs(x = "SECTION", y = "Count", title = "Counts for each SECTION by Phylum") +
+  theme_minimal()
+
+```
+
+# Same Graph as above but the colors and X-axis have been cleaned up
+```{r}
+
+# Get unique Phylum values
+unique_phyla <- unique(section_phylum_counts$Phylum)
+
+# Generate a color palette with enough colors to match the number of unique Phylum values
+n_colors <- length(unique_phyla)
+#custom_colors <- brewer.pal(n_colors, "Spectral")
+custom_colors <- c("sienna", "red", "yellow", "royalblue", "purple","seagreen", "black", "orange", "lightgrey")
+
+
+plot_width <- 10
+plot_height <- 6
+margin_bottom <- 1.5
+
+# Plot the stacked bar graph for counts by SECTION with phyla as fill and custom colors
+ggplot(section_phylum_counts, aes(x = SECTION, y = Total_Count, fill = Phylum)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = custom_colors) +  # Set custom colors for the phyla
+  labs(x = "SECTION", y = "Count") +
+  ggtitle("Phyla Count by Section") +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, face = "bold"),
+    plot.margin = unit(c(margin_bottom, 0.5, 0.5, 0.5), "cm"),
+    plot.title = element_text(hjust = 0.5),  # Center the plot title
+    plot.background = element_rect(fill = "white"),  # Set plot background color
+    panel.grid = element_blank(),  # Remove grid lines
+    axis.line = element_line(size = 0.5),  # Customize axis line width
+    legend.position = "right" ) +
+  coord_cartesian(ylim = c(0, max(section_phylum_counts$Total_Count) * 1.1))  # Adjust Y-axis limits# Plot the stacked bar graph for counts by SECTION with phyla as fill and custom colors
+all_sections <- 1:8
+
+# Plot the stacked bar graph for counts by SECTION with phyla as fill and custom colors
+ggplot(section_phylum_counts, aes(x = factor(SECTION, levels = all_sections), y = Total_Count, fill = Phylum)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = custom_colors) +  # Set custom colors for the phyla
+  labs(x = "SECTION", y = "Count", title = "Phyla Count by Section") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 0, hjust = 1, vjust = 0.5, face = "bold")) +
+  scale_x_discrete(limits = all_sections)  # Set X-axis labels to include all sections from 1 to 8
+
+```
+
+# Next Viz
+# fix duplicate M and match the colors to the graph above
+```{r}
+
+# Sum the counts for each ZONATION and Phylum
+zonation_phylum_counts <- counts1 %>%
+  group_by(ZONATION, Phylum) %>%
+  summarize(Total_Count = sum(Count))
+
+custom_colors <- c("sienna", "red", "yellow", "royalblue", "purple","seagreen", "black", "orange", "lightgrey")
+
+
+ggplot(zonation_phylum_counts, aes(x = ZONATION, y = Total_Count, fill = Phylum)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = custom_colors) +
+  labs(x = "Zonation", y = "Phyla Count", title = "Phyla Count across Zonation") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+# MARINe Site Comparison
+```{r}
+
+# Combine Site and Section to form the X-axis label
+marine$Site_Section <- paste(marine$SITE, marine$SECTION, sep = "-")
+
+# Define the custom order of Phylum categories
+custom_order <- c("Rhodophyta", "Ochrophyta", "Chlorophyta", "Mollusca", "Cnidaria",  "Arthropoda")
+
+# Match colors to phyla from last graph
+custom_colors <- c("indianred4", "salmon2", "mediumseagreen", "green2", "royalblue","red")
+
+# Reorder the Phylum variable based on the custom order
+marine$Phylum <- factor(marine$Phylum, levels = custom_order)
+
+# Plot the stacked bar graph
+ggplot(marine, aes(x = Site_Section, y = Percent_Cover, fill = Phylum)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values = custom_colors) +
+  labs(title = "Phyla Percent Cover across Site and Section",
+       x = "Site - Section",
+       y = "Percent Cover") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  guides(fill = guide_legend(reverse = TRUE))  # Reverse the order of the legend
+
+```
+# Algae Data Visualization
+```{r}
+
+
+# Assuming you already have the 'algae' dataframe, create a new dataframe with the desired format
+algae_counts <- algae %>%
+  pivot_longer(cols = c(BROWN, RED, GREEN, ENCRUSTING, OTHER), names_to = "Algal_Type", values_to = "Presence") %>%
+  group_by(SECTION, Algal_Type) %>%
+  summarize(Count = sum(ifelse(Presence == "P", 1, 0)))
+
+# Define the custom order for the legend
+custom_order <- c("OTHER", "ENCRUSTING","RED", "GREEN", "BROWN")
+algae_counts$Algal_Type <- factor(algae_counts$Algal_Type, levels = custom_order)
+
+# Plot the stacked bar chart
+ggplot(algae_counts, aes(x = as.factor(SECTION), y = Count, fill = Algal_Type)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("BROWN" = "brown", "RED" = "red", "GREEN" = "seagreen4", "ENCRUSTING" = "purple", "OTHER" = "gray"),
+                    labels = c("BROWN" = "Brown", "RED" = "Red", "GREEN" = "Green", "ENCRUSTING" = "Encrusting", "OTHER" = "Other")) +
+  labs(x = "Section", y = "Count", fill = "Algal Type", title = "Algal Cover by Section") +
+  theme_minimal() +
+  theme(legend.position = "right",
+        plot.title = element_text(hjust= 0.5)) +
+  guides(fill = guide_legend(reverse = TRUE))  # To customize the order of names in the legend
+
+# Save the plot as an image (optional)
+ggsave("stacked_bar_plot.png", width = 10, height = 6)
+
+
+```
+
+# One more viz for the road
+```{r}
+
+```
