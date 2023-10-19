@@ -2,7 +2,3 @@
 steven/scripts/90-bismark-trim-test.sh
 steven/scripts/91-bismark-trim-test.sh
 .Rproj.user
-<<<<<<< HEAD
-=======
-.DS_Store
->>>>>>> 75474c131db3e464b1d71194545ec30b49d03417
